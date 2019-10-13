@@ -1,4 +1,4 @@
-#include "Sensoren/Temperatursensoren.h"
+#include <Temperatursensoren.h>
 
 void Temperatursensoren::task()
 { 
