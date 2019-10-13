@@ -7,25 +7,25 @@
 
 typedef enum
 {
-    AUS,
-    AN,
-    FROSTSCHUTZ,
-    SCHORNSTEINFEGER,
-    FEHLER
+    STEUERUNG_AUS,
+    STEUERUNG_AN,
+    STEUERUNG_FROSTSCHUTZ,
+    STEUERUNG_SCHORNSTEINFEGER,
+    STEUERUNG_FEHLER
 } STATUS_STEUERUNG;
 
 typedef enum
 {
-    AUS,
-    AN,
-    FEHLER
+    BRENNER_AUS,
+    BRENNER_AN,
+    BRENNER_FEHLER
 } STATUS_BRENNER;
 
 typedef enum
 {
-    AUS,
-    AN,
-    FEHLER              // not used
+    PUMPE_AUS,
+    PUMPE_AN,
+    PUMPE_FEHLER              // not used
 } STATUS_PUMPE;
 
 typedef struct 
