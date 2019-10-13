@@ -6,10 +6,10 @@
 #include <Update.h>
 #include <ArduinoOTA.h>
 
-#include "Bedienfeld/Bedienfeld.h"
-#include "Daten/Daten.h"
-#include "Sensoren/Temperatursensoren.h"
-#include "Kommunikation/SerOut.h"
+#include <Bedienfeld.h>
+#include <Daten.h>
+#include <Temperatursensoren.h>
+#include <SerOut.h>
 
 const char* ssid     = "Schragen2.4";
 const char* password = "warpdrive";

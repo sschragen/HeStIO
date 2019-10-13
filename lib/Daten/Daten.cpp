@@ -1,4 +1,4 @@
-#include "Daten/Daten.h"
+#include <Daten.h>
 
 
 void Daten::SollwerteSpeichern ()
