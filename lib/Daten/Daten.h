@@ -5,17 +5,41 @@
 #include <SPIFFS.h>
 #include <ArduinoJson.h>
 
+typedef enum
+{
+    AUS,
+    AN,
+    FROSTSCHUTZ,
+    SCHORNSTEINFEGER,
+    FEHLER
+} STATUS_STEUERUNG;
+
+typedef enum
+{
+    AUS,
+    AN,
+    FEHLER
+} STATUS_BRENNER;
+
+typedef enum
+{
+    AUS,
+    AN,
+    FEHLER              // not used
+} STATUS_PUMPE;
+
 typedef struct 
 {
     /* data */
+    STATUS_STEUERUNG    Steuerung;
+    STATUS_BRENNER      Brenner;
+    STATUS_PUMPE        Pumpe;
+
+    bool Error;
+
     int Temp_Vorlauf;
     int Temp_Ruecklauf;
     int Temp_Aussen;
-
-    bool Brenner_An;
-    bool Pumpe_An;
-
-    bool Error;
 
     float Neigung;
     float Niveau;
