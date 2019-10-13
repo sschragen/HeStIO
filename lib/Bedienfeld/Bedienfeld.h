@@ -3,7 +3,11 @@
 
 #include <Arduino.h>
 #include <TouchButton.h>
+<<<<<<< HEAD:include/Bedienfeld/Bedienfeld.h
 #include "Bedienfeld/Anzeige/Anzeige.h"
+=======
+#include <Anzeige.h>
+>>>>>>> f04518adf25b28475e1db13c52bdd8f52ab2f878:lib/Bedienfeld/Bedienfeld.h
 
 extern TaskHandle_t TaskBedienfeld;
 
