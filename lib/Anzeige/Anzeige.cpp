@@ -9,6 +9,38 @@
 
 void Anzeige::Zeige_Startbildschirm ()
 {   
+    display->clearDisplay();
+
+    if (!SPIFFS.begin()) 
+    {
+        Serial.println("Failed to mount file system");
+    }
+
+    File f;
+    
+    // OPEN FILE (ENTER FILE WITH PATH WIRH SLASH IN FRONT)
+    f = SPIFFS.open("/Start128x64.MONO", "r");
+
+    if (f) 
+    {
+        int s = f.size();
+        Serial.printf("File Opened , Size=%d\r\n", s);
+
+        String data = f.readString();
+        //Serial.println(data);
+
+        const char* data1 = data.c_str();
+        f.close();
+
+        display->drawBitmap(0, 0, (uint8_t*) data1, 128, 64, 1);
+        display->display();
+    }
+    else 
+    {
+        Serial.println("File Not Opened");
+    }
+    delay (5000);
+
     display->setTextColor(WHITE);
 	display->setTextSize(1);
 	display->setCursor(1,0);
