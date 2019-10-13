@@ -2,7 +2,7 @@
 #define Bedienfeld_h
 
 #include <Arduino.h>
-#include "Bedienfeld/TouchButton/TouchButton.h"
+#include <TouchButton.h>
 #include "Bedienfeld/Anzeige/Anzeige.h"
 
 extern TaskHandle_t TaskBedienfeld;
