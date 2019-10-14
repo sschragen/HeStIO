@@ -17,6 +17,32 @@ void Anzeige::Zeige_Startbildschirm ()
 	display->display();
 };
 
+void Anzeige::Zeige_Bitmap(String name, int x, int y, int width, int height)
+{   
+    // LOAD FILESYSTEM
+    if (!SPIFFS.begin()) 
+    {
+        Serial.println("Failed to mount file system");
+    }
+    File f = SPIFFS.open("/"+name+".mono", "r");
+    if (f) 
+    {
+        int s = f.size();
+        Serial.printf("File Opened , Size=%d\r\n", s);
+        String data = f.readString();
+        //Serial.println(data);
+        const char* bitmap = data.c_str();
+        f.close();
+        display->drawXBitmap(x,y,(const uint8_t*) bitmap,width,height,1); 
+        display->display();
+    } 
+    else 
+    {
+        Serial.println("File Not Opened");
+    }
+
+};
+
 Anzeige::Anzeige()
 {   
     // Display initialisieren

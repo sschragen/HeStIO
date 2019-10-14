@@ -6,6 +6,7 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <SPIFFS.h>
 
 #define OLED_RESET 4
 
@@ -32,6 +33,7 @@ class Anzeige
         ~Anzeige();
 
         void Zeige_Startbildschirm ();
+        void Zeige_Bitmap(String name, int x, int y, int width, int height);
 
 };
 
