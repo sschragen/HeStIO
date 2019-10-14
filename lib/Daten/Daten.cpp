@@ -59,8 +59,8 @@ Daten::Daten()
 {
     Sollwert.Temp_Vorlauf = 65;
     Sollwert.Temp_Ruecklauf = 55;
-    Sollwert.Brenner_An = false;
-    Sollwert.Pumpe_An = false;
+    Sollwert.Brenner = BRENNER_AUS;
+    Sollwert.Pumpe = PUMPE_AN;
     Sollwert.Niveau = 1;
     Sollwert.Neigung = 1;
 };
