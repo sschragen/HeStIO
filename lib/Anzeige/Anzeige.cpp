@@ -9,18 +9,12 @@
 
 void Anzeige::Zeige_Startbildschirm ()
 {   
+    
     display->setTextColor(WHITE);
 	display->setTextSize(1);
 	display->setCursor(1,0);
-	display->println("HeStIO v0.0.1");
-	display->setCursor(14,56);
-	display->println("(c) Stephanus Schragen)");
-	display->setTextSize(2);
-	display->setCursor(34,15);
-	display->println("Willkommen");
-	
-    display->display();
-    delay (5000);
+	display->println("Display init ...");
+	display->display();
 };
 
 Anzeige::Anzeige()

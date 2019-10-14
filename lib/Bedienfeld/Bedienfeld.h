@@ -14,9 +14,11 @@ class Bedienfeld
 {
     private:
         /* data */
-        TouchButton *ButtonLeft;// (4, "LEFT");
-        TouchButton *ButtonRight;// (Touch2,"RIGHT");
-        TouchButton *ButtonOK ;//   (Touch3,"OK");
+        TouchButton *Btn_Left;// (4, "LEFT");
+        TouchButton *Btn_Right;// (Touch2,"RIGHT");
+        TouchButton *Btn_OK ;//   (Touch3,"OK");
+        TouchButton *Btn_Up;
+        TouchButton *Btn_Down;
 
         Anzeige *Display;
 
