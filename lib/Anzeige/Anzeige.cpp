@@ -9,11 +9,8 @@
 
 void Anzeige::Zeige_Startbildschirm ()
 {   
-    
-    display->setTextColor(WHITE);
-	display->setTextSize(1);
-	display->setCursor(1,0);
-	display->println("Display init ...");
+    display->clearDisplay();
+    draw_Bitmap ("HESTIO - Startbildschirm.mono",1,1,128,64);
 	display->display();
 };
 
@@ -25,7 +22,7 @@ void Anzeige::draw_Bitmap(String name, int x, int y, int width, int height)
             throw "Failed to mount file system";
         File file = SPIFFS.open("/"+name+".mono", "r");
         if (!file) 
-            throw "File Not Opened";
+            throw "File /" + name +".mono Not Opened";
         
         String data = file.readString();
         file.close();
@@ -33,7 +30,6 @@ void Anzeige::draw_Bitmap(String name, int x, int y, int width, int height)
         const uint8_t* bitmap = (uint8_t*) data.c_str();
         
         display->drawXBitmap(x,y,bitmap,width,height,1); 
-        display->display();
     }
     catch (char *s) 
     {
@@ -50,12 +46,9 @@ Anzeige::Anzeige()
     display = new Adafruit_SSD1306 (SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
     
     display->begin(SSD1306_SWITCHCAPVCC, 0x3C);
-    display->display();
-    delay(2000); // Pause for 2 seconds
-    display->clearDisplay();
-	
     // Zeige Startbildschirm
     Zeige_Startbildschirm (); 
+    delay (5000);
 
     // Eventhandler einrichten
 
