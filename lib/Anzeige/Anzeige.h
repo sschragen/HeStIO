@@ -8,8 +8,6 @@
 #include <Adafruit_SSD1306.h>
 #include <SPIFFS.h>
 
-#define OLED_RESET 4
-
 typedef enum
     {   
         DSP_START,
