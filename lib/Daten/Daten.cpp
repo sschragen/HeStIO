@@ -29,7 +29,7 @@ void Daten::SollwerteLaden ()
     {
         if (SPIFFS.exists("Sollwerte.ini")) 
         {
-            File file = SPIFFS.open("Sollwerte.ini", "w");                 // Open it
+            File file = SPIFFS.open("Sollwerte.ini", "r");                 // Open it
             DynamicJsonDocument doc(1024);
 
             DeserializationError error = deserializeJson(doc, file);

@@ -7,6 +7,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <SPIFFS.h>
+#include <ArduinoJson.h>
 
 typedef enum
     {   
@@ -32,6 +33,7 @@ class Anzeige
 
         void Zeige_Startbildschirm ();
         void draw_Bitmap(String name, int x, int y, int width, int height);
+        void DrawJsonBitmap (String name, int x, int y);
 
 };
 

@@ -10,9 +10,46 @@
 void Anzeige::Zeige_Startbildschirm ()
 {   
     display->clearDisplay();
-    draw_Bitmap ("HESTIO - Startbildschirm.mono",1,1,128,64);
+    draw_Bitmap ("Startbildschirm",1,1,128,64);
+	display->display();
+    delay (5000);
+    display->clearDisplay();
+    DrawJsonBitmap ("Startbildschirm",1,1);
 	display->display();
 };
+
+void Anzeige::DrawJsonBitmap (String filename, int x, int y)
+{ 
+    filename = "/"+filename+".json";
+    try
+    {
+        if (!SPIFFS.begin())
+            throw "SPIFFS kann nicht gestartet werden";
+
+        if (!SPIFFS.exists(filename)) 
+            throw filename+" kann nicht geöffnet werden";
+
+        File file = SPIFFS.open(filename, "r"); 
+
+        DynamicJsonDocument doc(1024);
+        DeserializationError error = deserializeJson(doc, file);
+        if (error)
+            throw "JSON Error";
+        int width = doc["WIDTH"];
+        int height = doc["HEIGHT"];
+        String data = doc["MONO"];
+        const uint8_t* bitmap = (uint8_t*) data.c_str();
+        
+        file.close(); 
+
+        display->drawXBitmap(x,y,bitmap,width,height,1); 
+    }
+    catch(char *s)
+    {
+        Serial.println("Anzeige::DrawJsonBitmap - "+*s);
+    }
+    SPIFFS.end ();
+};    
 
 void Anzeige::draw_Bitmap(String name, int x, int y, int width, int height)
 {   
