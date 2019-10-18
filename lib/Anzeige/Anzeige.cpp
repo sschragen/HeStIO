@@ -10,7 +10,6 @@
 void Anzeige::Zeige_Startbildschirm ()
 {   
     display->clearDisplay();
-<<<<<<< HEAD
 
     if (!SPIFFS.begin()) 
     {
@@ -54,34 +53,6 @@ void Anzeige::Zeige_Startbildschirm ()
 	
     display->display();
     delay (5000);
-=======
-    draw_Bitmap ("HESTIO - Startbildschirm.mono",1,1,128,64);
-	display->display();
-};
-
-void Anzeige::draw_Bitmap(String name, int x, int y, int width, int height)
-{   
-    try
-    {   
-        if (!SPIFFS.begin()) 
-            throw "Failed to mount file system";
-        File file = SPIFFS.open("/"+name+".mono", "r");
-        if (!file) 
-            throw "File /" + name +".mono Not Opened";
-        
-        String data = file.readString();
-        file.close();
-
-        const uint8_t* bitmap = (uint8_t*) data.c_str();
-        
-        display->drawXBitmap(x,y,bitmap,width,height,1); 
-    }
-    catch (char *s) 
-    {
-        Serial.println("Anzeige::ZeigeBitmap - "+*s);
-    }
-
->>>>>>> 3bbcca630040da71d5e1ab6fe08243f5106878f5
 };
 
 Anzeige::Anzeige()
