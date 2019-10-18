@@ -17,11 +17,12 @@ void Bedienfeld::task ()
 void Bedienfeld::startTaskImpl(void* _this)
 {
     static_cast<Bedienfeld*>(_this)->task();
-}
+};
 
-Bedienfeld::Bedienfeld(/* args */)
+Bedienfeld::Bedienfeld()
 {
     Display = new Anzeige ();
+    Display->Zeige_Startbildschirm ();
     
     xTaskCreatePinnedToCore(
                     this->startTaskImpl,   /* Task function. */
@@ -33,18 +34,17 @@ Bedienfeld::Bedienfeld(/* args */)
                     0);          /* pin task to core 0 */                  
     delay(500);
 
-    ButtonLeft  = new TouchButton (Touch4,"LEFT");
-    ButtonRight = new TouchButton (Touch2,"RIGHT");
-    ButtonOK    = new TouchButton (Touch3,"OK");
+    Btn_Left  = new TouchButton (Touch4,"LEFT");
+    Btn_Right = new TouchButton (Touch2,"RIGHT");
+    Btn_OK    = new TouchButton (Touch3,"OK");
 
-    Display = new Anzeige ();
 }
 
 Bedienfeld::~Bedienfeld()
 {
-    delete ButtonLeft;
-    delete ButtonRight;
-    delete ButtonOK;
+    delete Btn_Left;
+    delete Btn_Right;
+    delete Btn_OK;
 
     delete Display;
 }

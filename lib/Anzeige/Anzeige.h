@@ -33,6 +33,7 @@ class Anzeige
         ~Anzeige();
 
         void Zeige_Startbildschirm ();
+        void draw_Bitmap(String name, int x, int y, int width, int height);
 
 };
 
