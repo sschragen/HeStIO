@@ -9,6 +9,8 @@
 #include <SPIFFS.h>
 #include <ArduinoJson.h>
 
+#define OLED_RESET 4
+
 typedef enum
     {   
         DSP_START,
@@ -32,8 +34,8 @@ class Anzeige
         ~Anzeige();
 
         void Zeige_Startbildschirm ();
-        void draw_Bitmap(String name, int x, int y, int width, int height);
-        void DrawJsonBitmap (String name, int x, int y);
+        void drawBitmap (int x, int y, String name, int width, int height);
+        void drawBitmap (int x, int y, String name);
 
 };
 
