@@ -7,6 +7,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <SPIFFS.h>
+#include <ArduinoJson.h>
 
 #define OLED_RESET 4
 
@@ -33,7 +34,8 @@ class Anzeige
         ~Anzeige();
 
         void Zeige_Startbildschirm ();
-        void draw_Bitmap(String name, int x, int y, int width, int height);
+        void drawBitmap (int x, int y, String name, int width, int height);
+        void drawBitmap (int x, int y, String name);
 
 };
 

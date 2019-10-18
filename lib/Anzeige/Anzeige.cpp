@@ -7,6 +7,44 @@
 #define SDAPIN  12
 #define SCLPIN  14
 
+void Anzeige::drawBitmap(int x, int y, String name)
+{   
+    File file;
+    try
+    {
+        if (!SPIFFS.begin()) 
+            throw "SPIFFS not mounted";
+        
+        name = "/"+name+"json";
+        if (!SPIFFS.exists(name))
+            throw name + "existiert nicht"; 
+        
+        file = SPIFFS.open(name, "r");                 // Open it
+        if (!file)
+            throw "konnte datei nicht öffnen";
+        DynamicJsonDocument doc(1024);
+
+        DeserializationError error = deserializeJson(doc, file);
+        if (error)
+            throw "JSON Fehler";
+        int width = doc["WIDTH"];
+        int height = doc["HEIGHT"];
+        
+        String data = doc["BITMAP"];
+        const char* data1 = data.c_str();
+
+        display->drawBitmap(x, y, (uint8_t*) data1, width, height, 1);
+        display->display();     
+    }
+    catch(char* s)
+    {
+        Serial.println ("Anzeige:: drawBitmap - "+*s);
+    }
+
+    file.close(); 
+    SPIFFS.end ();    
+}
+
 void Anzeige::Zeige_Startbildschirm ()
 {   
     display->clearDisplay();
@@ -14,6 +52,7 @@ void Anzeige::Zeige_Startbildschirm ()
     if (!SPIFFS.begin()) 
     {
         Serial.println("Failed to mount file system");
+
     }
 
     File f;
