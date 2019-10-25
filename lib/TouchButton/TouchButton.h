@@ -4,16 +4,15 @@
 #include <Arduino.h>
 
 #define Touch0 4
-//const int Touch0 = 4;
-        //Touch1 >>  ((Not available on Devkit 30 pin version but available on Devkit 36 pin version 
-const int Touch2 = 2;
-const int Touch3 = 15;
-const int Touch4 = 13;
-const int Touch5 = 12;
-const int Touch6 = 14;
-const int Touch7 = 27;
-const int Touch8 = 33;
-const int Touch9 = 32;
+#define Touch2 2
+#define Touch3 15
+#define Touch4 13
+#define Touch5 12
+#define Touch6 14
+#define Touch7 27
+#define Touch8 33
+#define Touch9 32
+
 
 extern QueueHandle_t ButtonsQueue;
 extern int AnzahlButtons;
@@ -28,8 +27,8 @@ typedef enum
 
 typedef struct 
     {
-        //char Name[10];
-        String Name;
+        char Name[10];
+        //String Name;
         BTN_STATE_TYPE State;
         int Pin;
         int Start_millis;
