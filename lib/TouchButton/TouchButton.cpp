@@ -18,14 +18,15 @@ void TouchButton::task()
                     Button.State = BTN_TOUCHED;                                     // Neuer Status "berührt" setzen
                     Button.Start_millis = millis();                                 // Timer sichern
                     xQueueSend(ButtonsQueue,&Button,(TickType_t)0);        // sende statuswechsel in Queue
-                    //Serial.println(" touched");
+                    Serial.println(String(Button.Name)+" touched");
                     break;
                 case (BTN_TOUCHED) :
-                    if (millis()-Button.Start_millis > 3000)
+                    if (millis()-Button.Start_millis > 2000)
                     {
                         Button.State = BTN_HOLD;
                         xQueueSend(ButtonsQueue,&Button,(TickType_t)0);    // sende statuswechsel in Queue
-                        //Serial.println(" hold");
+                        digitalWrite(LED_BUILTIN, HIGH);
+                        Serial.println(String(Button.Name)+" hold");
                     }
                     break;
                 default :
@@ -37,6 +38,7 @@ void TouchButton::task()
         else 
         {
             Button.State = BTN_OFF;
+            digitalWrite(LED_BUILTIN, LOW);
             //xQueueSend(ButtonsQueue,(void *)&Button,(TickType_t )0);    // sende statuswechsel in Queue
         }
         //Serial.println (TOUCH_SENSOR_VALUE);
@@ -52,26 +54,75 @@ void TouchButton::startTaskImpl(void* _this)
 
 void TouchButton::startTask()
 {
-    xTaskCreatePinnedToCore(this->startTaskImpl, "Task", 10000/*2048*/, this, 5, NULL,0);
+    xTaskCreatePinnedToCore(this->startTaskImpl, "Task", 2048, this, 5, NULL,0);
 }
 
 int TouchButton::Measure  ()
 {   int sum=0;
+    Serial.printf("Kalibrierung von Button %s läuft \n",Button.Name);
     for (int i=0; i<10 ; i++)
-    {   sum += touchRead(Button.Pin);
+    {   int act = touchRead(Button.Pin);
+        Serial.printf (" %3d",act);
+        sum += act;
         delay (500);
     }
+    Serial.println();
     return sum / 10;    
+};
+
+void TouchButton::writeConfig ()
+{
+
+};
+
+void TouchButton::readConfig ()
+{
+
+};
+
+bool TouchButton::configExists ()
+{   if (!SPIFFS.begin(true)) {
+        Serial.println("An Error has occurred while mounting SPIFFS");
+        return false;
+    }
+    else 
+    {
+        File file = SPIFFS.open(TOUCHBUTTON_CONFIG_NAME, FILE_READ);
+        if (!file) 
+        {
+            Serial.println("There was an error opening the file for writing");
+            file.close();
+            return false;
+        }
+        file.close();
+    }
+    
+    return true;
 };
 
 TouchButton::TouchButton(int _BTN_PIN, String _NAME)
 {
-    AnzahlButtons++;
-    Button.Pin = _BTN_PIN;
-    Button.State = BTN_OFF;
-    _NAME.toCharArray(Button.Name,10);
-    Button.Threshold =30;
+    if (configExists ())
+    {
+        readConfig ();
+    }
+    else 
+    {
+        Button.Pin = _BTN_PIN;
+        Button.State = BTN_OFF;
+        _NAME.toCharArray(Button.Name,10);
 
+        int Eichung = Measure ();
+        Serial.print ("Eichung Taste "+_NAME+" ");
+        Serial.println (Eichung);
+        if (Eichung >40 )
+            Button.Threshold = Eichung-30;
+        else 
+            //failsafe
+            Button.Threshold = 30;
+    }
+
+    AnzahlButtons++;
     if( ButtonsQueue == NULL )
     {
         // Queue was not created

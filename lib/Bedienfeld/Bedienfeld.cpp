@@ -23,20 +23,23 @@ Bedienfeld::Bedienfeld()
 {
     //Display = new Anzeige ();
     //Display->Zeige_Startbildschirm ();
+    Serial.println("Erzeige Buttons");
+    Btn_Left  = new TouchButton (Touch6,"LEFT");
+    Btn_Right = new TouchButton (Touch4,"RIGHT");
+    Btn_OK    = new TouchButton (Touch5,"OK");
+    Serial.println("Buttons fertig");
     
     xTaskCreatePinnedToCore(
                     this->startTaskImpl,   /* Task function. */
                     "Bedienfeld",     /* name of task. */
-                    10000,       /* Stack size of task */
+                    2048,       /* Stack size of task */
                     NULL,        /* parameter of the task */
                     1,           /* priority of the task */
                     &TaskBedienfeld,      /* Task handle to keep track of created task */
-                    0);          /* pin task to core 0 */                  
+                    1);          /* pin task to core 0 */                  
     delay(500);
 
-    //Btn_Left  = new TouchButton (Touch4,"LEFT");
-    Btn_Right = new TouchButton (Touch2,"RIGHT");
-    //Btn_OK    = new TouchButton (Touch3,"OK");
+    
 
 }
 

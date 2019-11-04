@@ -10,6 +10,9 @@
 #include <ArduinoJson.h>
 
 #define OLED_RESET 4
+#define SDAPIN  21
+#define SCLPIN  22
+
 
 typedef enum
     {   
