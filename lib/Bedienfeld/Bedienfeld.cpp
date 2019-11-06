@@ -10,7 +10,15 @@ void Bedienfeld::task ()
 
     for(;;)
     {   // Check the Queue
-       
+        if( ButtonsQueue != 0 )
+        { 
+            BTN_Button Message;
+            xQueueReceive(ButtonsQueue,&Message, portMAX_DELAY);
+            Serial.print(Message.Name);
+            Serial.print("-");
+            Serial.println(Message.State);
+        }  
+        vTaskDelay( 100 / portTICK_PERIOD_MS );
     } 
 };
 
@@ -21,11 +29,9 @@ void Bedienfeld::startTaskImpl(void* _this)
 
 Bedienfeld::Bedienfeld()
 {
-    //Display = new Anzeige ();
-    //Display->Zeige_Startbildschirm ();
-    Serial.println("Erzeige Buttons");
-    Btn_Left  = new TouchButton (Touch6,"LEFT");
-    Btn_Right = new TouchButton (Touch4,"RIGHT");
+    Serial.println("Erzeuge Buttons");
+    Btn_Left  = new TouchButton (Touch4,"LEFT");
+    Btn_Right = new TouchButton (Touch6,"RIGHT");
     Btn_OK    = new TouchButton (Touch5,"OK");
     Serial.println("Buttons fertig");
     

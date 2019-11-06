@@ -18,7 +18,7 @@ void TouchButton::task()
                     Button.State = BTN_TOUCHED;                                     // Neuer Status "berührt" setzen
                     Button.Start_millis = millis();                                 // Timer sichern
                     xQueueSend(ButtonsQueue,&Button,(TickType_t)0);        // sende statuswechsel in Queue
-                    Serial.println(String(Button.Name)+" touched");
+                    Serial.printf("%2d %s touched\n",TOUCH_SENSOR_VALUE,Button.Name);
                     break;
                 case (BTN_TOUCHED) :
                     if (millis()-Button.Start_millis > 2000)
@@ -42,7 +42,7 @@ void TouchButton::task()
             //xQueueSend(ButtonsQueue,(void *)&Button,(TickType_t )0);    // sende statuswechsel in Queue
         }
         //Serial.println (TOUCH_SENSOR_VALUE);
-        vTaskDelay( 250 / portTICK_PERIOD_MS );
+        vTaskDelay( 150 / portTICK_PERIOD_MS );
     }
     
 }
@@ -116,10 +116,10 @@ TouchButton::TouchButton(int _BTN_PIN, String _NAME)
         Serial.print ("Eichung Taste "+_NAME+" ");
         Serial.println (Eichung);
         if (Eichung >40 )
-            Button.Threshold = Eichung-30;
+            Button.Threshold = Eichung-35;
         else 
             //failsafe
-            Button.Threshold = 30;
+            Button.Threshold = 15;
     }
 
     AnzahlButtons++;

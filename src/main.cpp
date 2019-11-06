@@ -13,6 +13,10 @@
 
 #include <TouchButton.h>
 
+#include <Adafruit_GFX.h>    // Core graphics library
+#include <Adafruit_ST7735.h> // Hardware-specific library for ST7735
+#include <SPI.h>
+
 const char* host = "esp32";
 const char* ssid = "Schragen2.4";               // your WiFi name
 const char* password =  "warpdrive";            // your WiFi password
@@ -29,6 +33,25 @@ AsyncWebServer server(80);
 //SerOut Ausgabe();
 //Temperatursensoren Sensoren();
 Bedienfeld *InOut;
+#define LED_PIN     2
+#define TFT_CS      5
+#define TFT_RST     4    // you can also connect this to the Arduino reset
+#define TFT_DC      22
+#define TFT_SCLK    18    // set these to be whatever pins you like!
+#define TFT_MOSI    23    // set these to be whatever pins you like!
+Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
+// color definitions
+const uint16_t  Display_Color_Black        = 0x0000;
+const uint16_t  Display_Color_Blue         = 0x001F;
+const uint16_t  Display_Color_Red          = 0xF800;
+const uint16_t  Display_Color_Green        = 0x07E0;
+const uint16_t  Display_Color_Cyan         = 0x07FF;
+const uint16_t  Display_Color_Magenta      = 0xF81F;
+const uint16_t  Display_Color_Yellow       = 0xFFE0;
+const uint16_t  Display_Color_White        = 0xFFFF;
+// The colors we actually want to use
+uint16_t        Display_Text_Color         = Display_Color_Red;
+uint16_t        Display_Backround_Color    = Display_Color_Black;
 
 void scanI2C ()
 {
@@ -152,9 +175,20 @@ void setup_WIFI ()
 void setup() 
 {
   Serial.begin(115200); 
-  // Connect to Wi-Fi network with SSID and password
+
+  tft.initR(INITR_BLACKTAB);      // Init ST7735S chip, black tab
+  tft.setFont();
+  tft.fillScreen(Display_Backround_Color);
+  tft.setTextColor(Display_Text_Color);
+  tft.setTextSize(1);
+  tft.setCursor(0,0);  
+  tft.setTextColor(Display_Text_Color);   // change the text color to foreground color
+  tft.print("Hello");               // draw the new time value
+
+
   
-  setup_WIFI ();
+  
+  setup_WIFI ();      // Connect to Wi-Fi network with SSID and password
   setup_MQTT ();
   setup_OTA ();
 
@@ -166,14 +200,5 @@ void setup()
 
 void loop() 
 {
-  ArduinoOTA.handle();
-  
-  if( ButtonsQueue != 0 )
-  { 
-    BTN_Button Message;
-    xQueueReceive(ButtonsQueue,&Message, portMAX_DELAY);
-    Serial.print(Message.Name);
-    Serial.print("-");
-    Serial.println(Message.State);
-  }   
+  ArduinoOTA.handle(); 
 }
