@@ -11,11 +11,10 @@
 #include <Temperatursensoren.h>
 #include <SerOut.h>
 
-#include <TouchButton.h>
+#include <NTPClient.h>
+#include <WiFiUdp.h>
 
-#include <Adafruit_GFX.h>    // Core graphics library
-#include <Adafruit_ST7735.h> // Hardware-specific library for ST7735
-#include <SPI.h>
+//#include <TouchButton.h>
 
 const char* host = "esp32";
 const char* ssid = "Schragen2.4";               // your WiFi name
@@ -28,30 +27,14 @@ WiFiClient espClient;
 PubSubClient MQTT(espClient);
 
 AsyncWebServer server(80);
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP,"europe.pool.ntp.org", 3600, 60000);
 
 //Daten Steuerungsdaten();
 //SerOut Ausgabe();
 //Temperatursensoren Sensoren();
 Bedienfeld *InOut;
-#define LED_PIN     2
-#define TFT_CS      5
-#define TFT_RST     4    // you can also connect this to the Arduino reset
-#define TFT_DC      22
-#define TFT_SCLK    18    // set these to be whatever pins you like!
-#define TFT_MOSI    23    // set these to be whatever pins you like!
-Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
-// color definitions
-const uint16_t  Display_Color_Black        = 0x0000;
-const uint16_t  Display_Color_Blue         = 0x001F;
-const uint16_t  Display_Color_Red          = 0xF800;
-const uint16_t  Display_Color_Green        = 0x07E0;
-const uint16_t  Display_Color_Cyan         = 0x07FF;
-const uint16_t  Display_Color_Magenta      = 0xF81F;
-const uint16_t  Display_Color_Yellow       = 0xFFE0;
-const uint16_t  Display_Color_White        = 0xFFFF;
-// The colors we actually want to use
-uint16_t        Display_Text_Color         = Display_Color_Red;
-uint16_t        Display_Backround_Color    = Display_Color_Black;
+
 
 void scanI2C ()
 {
@@ -103,8 +86,8 @@ void setup_OTA ()
 {
   ArduinoOTA.onStart([]() 
   {
-    Serial.println("Start");
-    Serial.print ("[          ]");
+    Display.drawUpdateScreen ();
+    //InOut->stopAllTasks();
   });
 
   ArduinoOTA.onEnd([]() 
@@ -114,8 +97,10 @@ void setup_OTA ()
 
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) 
   {
+    int percent = progress /(total/100);
     Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
     Serial.println();
+    Display.updateUpdateScreen (percent);
   });
 
   ArduinoOTA.onError([](ota_error_t error) 
@@ -176,29 +161,25 @@ void setup()
 {
   Serial.begin(115200); 
 
-  tft.initR(INITR_BLACKTAB);      // Init ST7735S chip, black tab
-  tft.setFont();
-  tft.fillScreen(Display_Backround_Color);
-  tft.setTextColor(Display_Text_Color);
-  tft.setTextSize(1);
-  tft.setCursor(0,0);  
-  tft.setTextColor(Display_Text_Color);   // change the text color to foreground color
-  tft.print("Hello");               // draw the new time value
-
-
-  
-  
   setup_WIFI ();      // Connect to Wi-Fi network with SSID and password
   setup_MQTT ();
   setup_OTA ();
-
+  timeClient.begin();
+  timeClient.update();
+  digitalWrite(LED_BUILTIN, HIGH);
   delay(1000);
   InOut = new Bedienfeld();
+
+  Serial.println(timeClient.getFormattedTime());
+  MQTT.publish("HeStIO/Timestamp", timeClient.getFormattedTime().c_str()); 
   
   //scanI2C();
 };
 
 void loop() 
 {
+  
+  timeClient.update();
   ArduinoOTA.handle(); 
+
 }

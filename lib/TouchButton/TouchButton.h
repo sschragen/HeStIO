@@ -21,22 +21,31 @@ extern QueueHandle_t ButtonsQueue;
 extern int AnzahlButtons;
 
 typedef enum
-    {   
-        BTN_OFF,
-        BTN_TOUCHED,
-        BTN_HOLD
-    } BTN_STATE_TYPE;
+{
+    BTN_OFF,
+    BTN_JITTER,
+    BTN_TOUCHED,
+    BTN_HOLD,
+    BTN_RELEASED 
+} ButtonState_t;
 
+typedef enum
+{
+    BTN_LEFT,
+    BTN_OK,
+    BTN_RIGHT,
+    BTN_UP,
+    BTN_DOWN
+}   ButtonName_t;
 
 typedef struct 
-    {
-        char Name[10];
-        //String Name;
-        BTN_STATE_TYPE State;
-        int Pin;
-        int Start_millis;
-        int Threshold = 30;
-    } BTN_Button; 
+{
+    ButtonName_t Name;
+    ButtonState_t State;
+    int Pin;
+    int Start_millis;
+    int Threshold = 30;
+} ButtonData_t; 
 
 class TouchButton
 {
@@ -50,15 +59,18 @@ class TouchButton
 
                 
     public:
-        BTN_Button Button;
-            
+        ButtonData_t ButtonData;
+
+        uint8_t getState ();
+
         void writeConfig ();
         void readConfig ();
         bool configExists  ();
-        TouchButton(int _BTN_PIN, String _NAME);
-        ~TouchButton();
 
-        
+
+        TouchButton(int _BTN_PIN, ButtonName_t name);
+        ~TouchButton();
+                
 };
 
 #endif

@@ -1,16 +1,10 @@
 #include <Anzeige.h>
+#include <StreamUtils.h>
+extern "C" {
+#include "crypto/base64.h"
+}
 
-#define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 64 // OLED display height, in pixels
-// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
-
-void Anzeige::Zeige_Startbildschirm ()
-{   
-    display->clearDisplay();
-    drawBitmap (1,1,"Startbildschirm");
-	display->display();
-    delay (5000);
-};
+Adafruit_ST7735 tft(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST); 
 
 void Anzeige::drawBitmap(int x, int y, String name)
 {   
@@ -19,93 +13,126 @@ void Anzeige::drawBitmap(int x, int y, String name)
     {
         if (!SPIFFS.begin()) 
             throw "SPIFFS not mounted";
-        
-        name = "/"+name+"json";
+        Serial.println("OK 1");
+        name = "/"+name+".json";
+        Serial.println(name);
+        Serial.println("OK 1.1");
         if (!SPIFFS.exists(name))
             throw name + "existiert nicht"; 
-        
+        Serial.println("OK 2");
         file = SPIFFS.open(name, "r");                 // Open it
         if (!file)
-            throw "konnte datei nicht öffnen";
-        DynamicJsonDocument doc(1024);
+            Serial.print("konnte datei nicht öffnen");
+        Serial.println("OK 3");
+        ReadLoggingStream loggingStream(file, Serial);
+        DynamicJsonDocument doc(4024);
 
-        DeserializationError error = deserializeJson(doc, file);
-        if (error)
-            throw "JSON Fehler";
+        DeserializationError error = deserializeJson(doc, loggingStream);
+        if (error != DeserializationError::Ok)
+            Serial.println(error.c_str());
+        Serial.println("OK 4");
         int width = doc["WIDTH"];
         int height = doc["HEIGHT"];
         
         String data = doc["BITMAP"];
         const char* data1 = data.c_str();
+        size_t outputLength;
 
-        display->drawBitmap(x, y, (uint8_t*) data1, width, height, 1);
-        display->display();     
+        unsigned char *decoded = base64_decode((const unsigned char *)data1, strlen(data1), &outputLength);
+
+
+        tft.drawBitmap(x,y,(uint8_t*)decoded,width,height,RED);
+
+        free(decoded);
+        //Display->drawBitmap(x, y, (uint8_t*) data1, width, height, 1);
+           
     }
     catch(char* s)
     {
         Serial.println ("Anzeige:: drawBitmap - "+*s);
     }
-
+    Serial.println("OK end");
     file.close(); 
     SPIFFS.end ();    
 }
 
-Anzeige::Anzeige()
+void Anzeige::drawStatusLeiste ()
 {   
-    // Display initialisieren
-    //configure i2c
-    //Wire.begin(SDAPIN, SCLPIN); 
+    tft.drawFastHLine(0,96,160,WHITE);
+    drawButtonLeft(BLACK);
+    drawButtonOK(BLACK);
+    drawButtonRight(BLACK);
+};
 
-    #define SDA1 21
-    #define SCL1 22
-    TwoWire I2Cone = TwoWire(0);
-    I2Cone.begin(SDA1,SCL1,400000);
-    Serial.println("Scanning I2C Addresses Channel 1");
-    uint8_t cnt=0;
-    for(uint8_t i=0;i<128;i++){
-    I2Cone.beginTransmission(i);
-    uint8_t ec=I2Cone.endTransmission(true);
-    if(ec==0){
-        if(i<16)Serial.print('0');
-        Serial.print(i,HEX);
-        cnt++;
-    }
-    else Serial.print("..");
-    Serial.print(' ');
-    if ((i&0x0f)==0x0f)Serial.println();
-    }
-    Serial.print("Scan Completed, ");
-    Serial.print(cnt);
-    Serial.println(" I2C Devices found.");
-
-    Serial.println("Wire gestartet");
-    display = new Adafruit_SSD1306 (SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-    Serial.println("Display ADA gestartet A");
+void Anzeige::drawStartbildschirm ()
+{   
+    tft.initR(INITR_BLACKTAB);      // Init ST7735S chip, black tab
+    tft.setRotation(3);
+    tft.setFont();
+    tft.fillScreen(Display_Color_Black);
     
-    display->begin(SSD1306_SWITCHCAPVCC, 0x3C,false);
-    if (display) 
-        Serial.println("Display ADA gestartet B");
-    else
-        {
-             Serial.println("Display ADA NICHT gestartet B");    
-        }
-    
-    display->clearDisplay();
-    display->setTextSize(1);             // Normal 1:1 pixel scale
-    display->setTextColor(WHITE);        // Draw white text
-    display->setCursor(0,0);             // Start at top-left corner
-    display->println(F("Hello, world!"));
-    display->display();
-    // Zeige Startbildschirm
-    //Zeige_Startbildschirm (); 
-    //delay (5000);
+    drawBitmap (1,22,"Startbildschirm");
 
-    // Eventhandler einrichten
+    drawTitle();  
+    drawStatusLeiste ();    
+};
 
-    // Zeige ersten Statusbildschirm   
+void Anzeige::drawTitle ()
+{
+    tft.fillRect(0,0,160,20,Display_Color_White);
+    //tft.setTextSize(2);
+    tft.setFont(&FreeMonoBoldOblique12pt7b);
+    tft.setCursor(2,14);  
+    tft.setTextColor(Display_Color_Black);   // change the text color to foreground color
+    tft.print("HeStIO v0.1");  
+    tft.setFont();
+};
+
+void Anzeige::drawUpdateScreen ()
+{
+    tft.setFont();
+    tft.fillScreen(Display_Color_Black);
+    tft.setTextColor(Display_Color_White);
+    tft.setTextSize(1);
+    tft.setCursor(0,0);  
+    tft.print("Upadate Started ...");
+    tft.drawRect(0,10,102,12,Display_Color_Red);
+};
+
+void Anzeige::updateUpdateScreen (int percent)
+{
+    tft.drawRect(2,11,percent,10,(uint16_t)Display_Color_Green);
+};
+
+void Anzeige::drawButtonRight( uint16_t color)
+{
+    tft.fillTriangle(100, 98,120,108,100,118, color);
+    tft.drawTriangle(100, 98,120,108,100,118, (uint16_t)Display_Color_White);
+};
+
+void Anzeige::drawButtonLeft ( uint16_t color)
+{   
+    tft.fillTriangle( 40,108, 60, 98, 60,118, color);
+    tft.drawTriangle( 40,108, 60, 98, 60,118, (uint16_t)Display_Color_White);
+};
+
+void Anzeige::drawButtonOK   ( uint16_t color)
+{
+    tft.fillRect (70,98,20,20,color);
+    tft.drawRect (70,98,20,20,(uint16_t)Display_Color_White);
+};
+
+Anzeige::Anzeige()
+{   Serial.print("Anzeige() running on core ");
+    //tft.initR(INITR_BLACKTAB);      // Init ST7735S chip, black tab
+    //tft.setRotation(3);
+    //drawButtonLeft(BLACK);
+    //drawButtonOK(BLACK);
+    //drawButtonRight(BLACK);
+ 
 }
 
 Anzeige::~Anzeige()
 {
-    delete display;
+    //delete Display;
 }
