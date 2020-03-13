@@ -9,51 +9,42 @@ Adafruit_ST7735 tft(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
 void Anzeige::drawBitmap(int x, int y, String name)
 {   
     File file;
-    try
+    
+    if (SPIFFS.begin()) 
     {
-        if (!SPIFFS.begin()) 
-            throw "SPIFFS not mounted";
         Serial.println("OK 1");
         name = "/"+name+".json";
         Serial.println(name);
         Serial.println("OK 1.1");
-        if (!SPIFFS.exists(name))
-            throw name + "existiert nicht"; 
-        Serial.println("OK 2");
-        file = SPIFFS.open(name, "r");                 // Open it
-        if (!file)
-            Serial.print("konnte datei nicht öffnen");
-        Serial.println("OK 3");
-        ReadLoggingStream loggingStream(file, Serial);
-        DynamicJsonDocument doc(4024);
+        if (SPIFFS.exists(name))
+        {   
+            file = SPIFFS.open(name, "r");                 // Open it
+            if (file)
+            {   
+                ReadLoggingStream loggingStream(file, Serial);
+                DynamicJsonDocument doc(4024);
 
-        DeserializationError error = deserializeJson(doc, loggingStream);
-        if (error != DeserializationError::Ok)
-            Serial.println(error.c_str());
-        Serial.println("OK 4");
-        int width = doc["WIDTH"];
-        int height = doc["HEIGHT"];
-        
-        String data = doc["BITMAP"];
-        const char* data1 = data.c_str();
-        size_t outputLength;
+                DeserializationError error = deserializeJson(doc, loggingStream);
+                if (error == DeserializationError::Ok)
+                {                
+                    int width = doc["WIDTH"];
+                    int height = doc["HEIGHT"];
+                    String data = doc["MONO"];
+                    const char* data1 = data.c_str();
+                    size_t outputLength;
 
-        unsigned char *decoded = base64_decode((const unsigned char *)data1, strlen(data1), &outputLength);
+                    unsigned char *decoded = base64_decode((const unsigned char *)data1, strlen(data1), &outputLength);
+                    tft.drawBitmap(x,y,(uint8_t*)decoded,width,height,RED);
+                    free(decoded);
+                    //Display->drawBitmap(x, y, (uint8_t*) data1, width, height, 1);
 
-
-        tft.drawBitmap(x,y,(uint8_t*)decoded,width,height,RED);
-
-        free(decoded);
-        //Display->drawBitmap(x, y, (uint8_t*) data1, width, height, 1);
-           
-    }
-    catch(char* s)
-    {
-        Serial.println ("Anzeige:: drawBitmap - "+*s);
-    }
-    Serial.println("OK end");
-    file.close(); 
-    SPIFFS.end ();    
+                } else Serial.println(error.c_str());
+                file.close(); 
+            } else Serial.print("konnte Datei nicht öffnen");
+            SPIFFS.end ();   
+        } else Serial.println ("Datei existiert nicht"); 
+    }   else Serial.println ("SPIFFS konnte nicht gestartet werden");
+    Serial.println("OK end");    
 }
 
 void Anzeige::drawStatusLeiste ()
