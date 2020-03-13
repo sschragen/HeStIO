@@ -2,7 +2,12 @@
 #include <Bedienfeld.h>
 
 TaskHandle_t TaskBedienfeld;
-Anzeige Display;
+
+Anzeige *Display;
+TouchButton *Btn_Left;// (4, "LEFT");
+TouchButton *Btn_Right;// (Touch2,"RIGHT");
+TouchButton *Btn_OK ;//   (Touch3,"OK");
+
 
 void Bedienfeld::task ()
 {
@@ -23,7 +28,13 @@ void Bedienfeld::task ()
                 color = GREEN;
             break;
             case BTN_HOLD :
-                color = RED;                
+                color = RED;    
+                if (   (Btn_Left->ButtonData.State==BTN_HOLD) 
+                    && (Btn_Right->ButtonData.State==BTN_HOLD)  
+                    && (Btn_OK->ButtonData.State==BTN_OFF) ) 
+                {
+                    ESP.restart();
+                }            
             break;   
             default:
             break;     
@@ -31,31 +42,28 @@ void Bedienfeld::task ()
         switch (Message.Name)
         {
             case BTN_LEFT:
-                Display.drawButtonLeft((uint16_t)color); 
+                Display->drawButtonLeft((uint16_t)color); 
                 //Serial.printf("Left - pressed %d/n",color);
             break;
             case BTN_OK:
-                Display.drawButtonOK((uint16_t)color); 
+                Display->drawButtonOK((uint16_t)color); 
                 //Serial.printf("OK - pressed %d/n",color);
             break;
             case BTN_RIGHT:
-                Display.drawButtonRight((uint16_t)color);   
+                Display->drawButtonRight(color);   
                 //Serial.printf("Right - pressed %d/n",color); 
             break;
             default:
             break;  
         }
-    } 
+        
+    }
+
 };
 
 void Bedienfeld::startTaskImpl(void* _this)
 {
     static_cast<Bedienfeld*>(_this)->task();
-};
-
-void Bedienfeld::drawTestScreen(uint8_t t)
-{    
-
 };
 
 void Bedienfeld::stopAllTasks()
@@ -67,17 +75,14 @@ void Bedienfeld::stopAllTasks()
 
 Bedienfeld::Bedienfeld()
 {
-    //Display = new Anzeige();
-    //Serial.print("*Display : "); Serial.printf("%#10x",Display->Display);
-    
+    Display = new Anzeige();
+    pDisplay = Display;
 
     Serial.println("Erzeuge Buttons");
     Btn_Left  = new TouchButton (Touch4,BTN_LEFT);
     Btn_Right = new TouchButton (Touch6,BTN_RIGHT);
     Btn_OK    = new TouchButton (Touch5,BTN_OK);
     Serial.println("Buttons fertig");
-
-    Display.drawStartbildschirm();
     
     xTaskCreatePinnedToCore(
                     this->startTaskImpl,    /* Task function. */
@@ -88,16 +93,18 @@ Bedienfeld::Bedienfeld()
                     &TaskBedienfeld,         /* Task handle to keep track of created task */
                     1);                      /* pin task to core 0 */                  
     delay(500);
-
     
+    //MyIR = new Remote(RemoteRecvPin);
+    //MyIR->enable();
+
+    Display->print ("Tasten: gestartet");
 
 }
 
 Bedienfeld::~Bedienfeld()
 {
+    delete MyIR;
     delete Btn_Left;
     delete Btn_Right;
     delete Btn_OK;
-
-    //delete Display;
 }

@@ -1,7 +1,8 @@
-#include <TouchButton.h>
+#include "TouchButton.h"
 
 QueueHandle_t ButtonsQueue;
 int AnzahlButtons=0;
+
 
 void TouchButton::task()
 {   int TOUCH_SENSOR_VALUE = 0;
@@ -66,12 +67,6 @@ void TouchButton::startTaskImpl(void* _this)
     static_cast<TouchButton*>(_this)->task();
 }
 
-void TouchButton::startTask()
-{
-    //xTaskCreatePinnedToCore(this->startTaskImpl, "Task", 2048, this, 5, NULL,0);
-    xTaskCreatePinnedToCore(this->startTaskImpl, "Task", 2048, this, 5, NULL,1);
-}
-
 uint8_t TouchButton::getState ()
 {
     return ButtonData.State;
@@ -120,13 +115,33 @@ bool TouchButton::configExists ()
     return true;
 };
 
+boolean TouchButton::enable ()
+{
+    if (!enabled) 
+    {   
+        xTaskCreatePinnedToCore(this->startTaskImpl, "Task", 2048, this, 5, NULL,1);
+        enabled = true;
+    }
+    return enabled;
+};
+
+boolean TouchButton::disable ()
+{
+    if (enabled)
+    {
+        vTaskDelete (xHandle);
+        enabled = false;
+    }
+    return enabled;
+};
+
 TouchButton::TouchButton(int _BTN_PIN, ButtonName_t name)
 {
     AnzahlButtons++;
     if( ButtonsQueue == NULL )
     {
         // Queue was not created
-        ButtonsQueue = xQueueCreate (5, sizeof(ButtonData_t));
+        ButtonsQueue = xQueueCreate (20, sizeof(ButtonData_t));
         Serial.println("MSG Queue created");
     }
 
@@ -147,7 +162,8 @@ TouchButton::TouchButton(int _BTN_PIN, ButtonName_t name)
             //failsafe
             ButtonData.Threshold = 15;
     }
-    startTask();
+    //startTask();
+    enable ();
 };
 
 TouchButton::~TouchButton()

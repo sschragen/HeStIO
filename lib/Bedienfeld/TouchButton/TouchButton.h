@@ -59,6 +59,7 @@ class TouchButton
 
                 
     public:
+        boolean enabled = false;
         ButtonData_t ButtonData;
 
         uint8_t getState ();
@@ -67,6 +68,9 @@ class TouchButton
         void readConfig ();
         bool configExists  ();
 
+
+        boolean enable ();
+        boolean disable ();
 
         TouchButton(int _BTN_PIN, ButtonName_t name);
         ~TouchButton();

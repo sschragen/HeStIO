@@ -10,6 +10,10 @@
 
 #include <Adafruit_GFX.h>    // Core graphics library
 #include <Adafruit_ST7735.h> // Hardware-specific library for ST7735
+#include <FS.h>
+#include <JPEGDecoder.h>
+#include "JPeg\JPeg.h"
+
 #include <Fonts/FreeMonoBoldOblique12pt7b.h>
 
 #define LED_BUILTIN 2
@@ -23,18 +27,8 @@
 
 extern Adafruit_ST7735 tft; 
 
-
 #define SCREEN_WIDTH 160 // OLED display width, in pixels
 #define SCREEN_HEIGHT 128// OLED display height, in pixels
-// color definitions
-#define  Display_Color_Black         0x0000
-#define  Display_Color_Blue          0x001F
-#define  Display_Color_Red           0xF800
-#define  Display_Color_Green         0x07E0
-#define  Display_Color_Cyan          0x07FF
-#define  Display_Color_Magenta       0xF81F
-#define  Display_Color_Yellow        0xFFE0
-#define  Display_Color_White         0xFFFF
 // The colors we actually want to use
 // Color definitions
 #define BLACK    0x0000
@@ -48,29 +42,39 @@ extern Adafruit_ST7735 tft;
 
 
 typedef enum
-    {   
-        DSP_START,
-        DSP_INFO,
-        DSP_ON_OFF,
-        DSP_SEN_VORLAUF,
-        DSP_SEN_RUECKLAUF,
-        DSP_SEN_AUSSEN,
-    } DSP_STATE_TYPE;
+{   
+    DSP_START,
+    DSP_INFO,
+    DSP_ON_OFF,
+    DSP_SEN_VORLAUF,
+    DSP_SEN_RUECKLAUF,
+    DSP_SEN_AUSSEN,
+} DSP_STATE_TYPE;
+
+
 
 class Anzeige
 {
     private:
         /* data */
         DSP_STATE_TYPE DisplayStatus = DSP_START;
+        //JPeg *Hintergrund;
+
+        uint16_t AktZeile = 0;
+        String LOG[8];
+
+        void drawJPEG (int x, int y,const char *name);
              
     public:
          
+        boolean Busy = false;
+
         Anzeige();
         ~Anzeige();
 
+        void print (String zeile);
+
         void drawStartbildschirm ();
-        void drawBitmap (int x, int y, String name, int width, int height);
-        void drawBitmap (int x, int y, String name);
 
         void drawButtonRight( uint16_t color);
         void drawButtonLeft ( uint16_t color);
@@ -78,6 +82,7 @@ class Anzeige
 
         void drawTitle ();
         void drawStatusLeiste ();
+        void drawBackground ();
 
         void drawUpdateScreen();
         void updateUpdateScreen (int percent);

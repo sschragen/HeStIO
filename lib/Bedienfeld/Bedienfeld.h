@@ -2,12 +2,15 @@
 #define Bedienfeld_h
 
 #include <Arduino.h>
-#include <TouchButton.h>
-#include <Anzeige.h>
 
+#include <TouchButton\TouchButton.h>
+#include <Anzeige\Anzeige.h>
 
-extern Anzeige Display; 
+#include <Remote\Remote.h>
+const int RemoteRecvPin = 26;  //  Der Kontakt der am Infrarotsensor die Daten ausgibt, wird mit Pin 11 des Arduinoboards verbunden.
+
 extern TaskHandle_t TaskBedienfeld;
+extern Anzeige *Display; 
 
 // Color definitions
 #define BLACK    0x0000
@@ -33,14 +36,12 @@ class Bedienfeld
         
         
     public:
-        //Anzeige *Display;
-        TouchButton *Btn_Left;// (4, "LEFT");
-        TouchButton *Btn_Right;// (Touch2,"RIGHT");
-        TouchButton *Btn_OK ;//   (Touch3,"OK");
+        Anzeige *pDisplay;
+        Remote *MyIR;
 
         void stopAllTasks();
 
-        Bedienfeld(/* args */);
+        Bedienfeld();
         ~Bedienfeld();
 };
 

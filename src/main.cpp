@@ -6,15 +6,13 @@
 #include <Update.h>
 #include <ArduinoOTA.h>
 #include <PubSubClient.h>
+#include <NTPClient.h>
+#include <WiFiUdp.h>
+
 #include <Bedienfeld.h>
 #include <Daten.h>
 #include <Temperatursensoren.h>
 #include <SerOut.h>
-
-#include <NTPClient.h>
-#include <WiFiUdp.h>
-
-//#include <TouchButton.h>
 
 const char* host = "esp32";
 const char* ssid = "Schragen2.4";               // your WiFi name
@@ -24,7 +22,7 @@ const int   mqttPort = 1883;                    // Port vom MQTT Server
 const char* mqttUser = "TempLogger";            // MQTT Anmeldename
 const char* mqttPassword = "none";              // MQTT Passwort
 WiFiClient espClient;
-PubSubClient MQTT(espClient);
+PubSubClient MQTT (espClient);
 
 AsyncWebServer server(80);
 WiFiUDP ntpUDP;
@@ -34,6 +32,7 @@ NTPClient timeClient(ntpUDP,"europe.pool.ntp.org", 3600, 60000);
 //SerOut Ausgabe();
 //Temperatursensoren Sensoren();
 Bedienfeld *InOut;
+//Anzeige *Display;
 
 
 void scanI2C ()
@@ -86,7 +85,9 @@ void setup_OTA ()
 {
   ArduinoOTA.onStart([]() 
   {
-    Display.drawUpdateScreen ();
+    Display->drawUpdateScreen ();
+
+    InOut->MyIR->disable ();
     //InOut->stopAllTasks();
   });
 
@@ -97,10 +98,10 @@ void setup_OTA ()
 
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) 
   {
-    int percent = progress /(total/100);
-    Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
-    Serial.println();
-    Display.updateUpdateScreen (percent);
+    int percent = progress / (total/100);
+    //Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+    //Serial.println();
+    Display->updateUpdateScreen (percent);
   });
 
   ArduinoOTA.onError([](ota_error_t error) 
@@ -134,10 +135,13 @@ void setup_WIFI ()
   Serial.print("Connecting to ");
   Serial.println(ssid);
   WiFi.begin(ssid, password);
+  int Wait = 0;
   while (WiFi.status() != WL_CONNECTED) 
   {
     delay(500);
     Serial.print(".");
+    Wait++;
+    if (Wait > 20) ESP.restart();
   }
   // Print local IP address and start web server
   Serial.println("");
@@ -157,23 +161,38 @@ void setup_WIFI ()
   Serial.println("mDNS responder started");
 };
 
+
 void setup() 
 {
   Serial.begin(115200); 
+  bool success = SPIFFS.begin();
+  if (success) Serial.println("SPIFFS loaded");
+  InOut = new Bedienfeld();
+  
+  //InOut->Display->print ("SPIFFS geladen");
+  //InOut->Display->print ("Display ist an");
+  //Display->drawStartbildschirm();
 
+  delay (1000);
   setup_WIFI ();      // Connect to Wi-Fi network with SSID and password
+  String s = "IP:"+WiFi.localIP().toString();
+  //InOut->Display->print (s);
   setup_MQTT ();
+  s = "MQTT: " +  (MQTT.state() );
+  //InOut->Display->print (s);
   setup_OTA ();
+  //InOut->Display->print ("OTA: gestartet");
   timeClient.begin();
   timeClient.update();
   digitalWrite(LED_BUILTIN, HIGH);
   delay(1000);
-  InOut = new Bedienfeld();
+  
+  
 
   Serial.println(timeClient.getFormattedTime());
   MQTT.publish("HeStIO/Timestamp", timeClient.getFormattedTime().c_str()); 
   
-  //scanI2C();
+  
 };
 
 void loop() 
@@ -181,5 +200,4 @@ void loop()
   
   timeClient.update();
   ArduinoOTA.handle(); 
-
 }
